@@ -3,156 +3,135 @@ package com.driver;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
-import org.springframework.web.client.HttpClientErrorException.BadRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@Repository
+@Component
 public class MovieRepository {
-	
-	
-	
-	private List<Movie> list = new ArrayList<Movie>();
-	private List<Director> Dlist = new ArrayList<Director>();
-	HashMap<String, List<String>> directorsAndMoviesMap = new HashMap<>();
-	
-	  public List<Director> getDlist() {
-		return Dlist;
-	}
 
-	public void setDlist(List<Director> dlist) {
-		Dlist = dlist;
-	}
-	
-	
+    ArrayList<Movie> list1 = new ArrayList<>();
+    ArrayList<Director> list2 = new ArrayList<>();
 
-	public List<Movie> getList() {
-		return list;
-	}
+    HashMap<Movie,Director> hm = new HashMap<>();
 
-	public void setList(List<Movie> list) {
-		this.list = list;
-	}
-
-	public List<Movie> getAllMovies() {
-	        return list;
-	    }
-	
-	  
-	  public Movie findByMovieId(int id){
-	        for (int i = 0; i < list.size(); i++) {
-	            if (list.get(i).getId() == (id)) {
-	                return list.get(i);
-	            }
-	        }
-	        return null;
-	    }
-	  
-	  public Movie save(Movie p) {
-		  Movie Movie = new Movie();
-		 Movie.setId(p.getId());
-		  Movie.setName(p.getName());
-		  Movie.setDurationInMinutes(p.getDurationInMinutes());
-		  Movie.setImdbRating(p.getImdbRating());;
-	        list.add(Movie);
-	        return Movie;
-	    }
-	  
-	  public String delete(Integer id) {
-	        list.removeIf(x -> x.getId() == (id));
-	        return null;
-	    }
-	  
-	  public Movie update(Movie Movie) {
-      int idx = 0;
-      int id = 0;
-      for (int i = 0; i < list.size(); i++) {
-          if (list.get(i).getId() == (Movie.getId())) {
-              id = Movie.getId();
-              idx = i;
-              break;
-          }
-      }
-
-      Movie movie = new Movie();
-      movie.setId(id);
-      movie.setName(Movie.getName());
-      movie.setDurationInMinutes(Movie.getDurationInMinutes());
-      movie.setImdbRating(Movie.getImdbRating());
-      list.set(idx, Movie);
-      return movie;
-  }
-
-	public Director savedirector(Director director) {
-		// TODO Auto-generated method stub
-		Director d = new Director();
-		d.setName(director.getName());
-		d.setNumberOfMovies(director.getNumberOfMovies());
-		d.setImdbRating(director.getImdbRating());
-		return d;
-	}
-
-	public ResponseEntity findByMovieName(String name) {
-		// TODO Auto-generated method stub
-		
-		for(Movie m :list) {
-			if(m.getName() == name) {
-				return new ResponseEntity<>(m,HttpStatus.OK);
-			}
-			
-		}
-		 return new ResponseEntity<>("No book found", HttpStatus.BAD_GATEWAY);
-	        
-	}
-
-	public Object findByMovieDirectorName(String name) {
-		// TODO Auto-generated method stub
-		for( Director d :Dlist) {
-			if(d.getName() == name);{
-				return new ResponseEntity<>(d,HttpStatus.OK);
-			}
-		}
-		 return new ResponseEntity<>("No book found", HttpStatus.BAD_GATEWAY);
-	}
-	
-	
-	
-	
-//for put hash map 
-	void addMovieAndDirectors(String movieName, String directorName){
-        List<String> movieList;
-
-        if(directorsAndMoviesMap.containsKey(directorName))
-            movieList = directorsAndMoviesMap.get(directorName);
-        else {
-            movieList = new ArrayList<>();
-        }
-
-        movieList.add(movieName);
-        directorsAndMoviesMap.put(directorName, movieList);
-    }
-	
-	List<String> getMoviesByDirector(String directorName){
-        return directorsAndMoviesMap.get(directorName);
-    }
-	
-	//still
-	
-	
-	void deleteDirector(String director) {
-		Dlist.remove(director);
-        List<String> movieList = directorsAndMoviesMap.remove(director);
-
-        for(String movie : movieList) {
-        	list.remove(movie);
+    public void AddMovieToDB(Movie movie)
+    {
+        if(!list1.contains(movie))
+        {
+            list1.add(movie);
         }
     }
-	
-	
-	
-	
-	
 
+    public void AddDirectorToDB(Director director)
+    {
+        if(!list2.contains(director))
+        {
+            list2.add(director);
+        }
+    }
+
+    public void PairMovieAndDirectorToDB(String movieName, String directorName)
+    {
+        Movie M = null;
+        Director D = null;
+        for(Movie m : list1)
+        {
+            if(m.getName().equals(movieName))
+            {
+                M = m;
+                break;
+            }
+        }
+        for(Director d : list2)
+        {
+            if(d.getName().equals(directorName))
+            {
+                D = d;
+                break;
+            }
+        }
+        hm.put(M,D);
+    }
+
+    public Movie findMovieInDB(String name)
+    {
+        for(Movie m : list1){
+            if(m.getName().equals(name)){
+                return m;
+            }
+        }
+        return null;
+    }
+
+    public Director findDirectorInDB(String name)
+    {
+        for(Director d : list2)
+        {
+            if(d.getName().equals(name))
+            {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    public List<String> list1InDBByDirector(String name)
+    {
+        List<String> toReturn = new ArrayList<>();
+        for(Movie M : hm.keySet())
+        {
+            if(hm.get(M).getName().equals(name))
+            {
+                toReturn.add(M.getName());
+            }
+        }
+        return toReturn;
+    }
+
+    public List<String> findAllMoviesInDB()
+    {
+        List<String> list = new ArrayList<>();
+        for(Movie m : list1){
+            list.add(m.getName());
+        }
+        return list;
+    }
+
+    public void DeleteMovieFromDBbyName(String Dname)
+    {
+        Director D = null;
+        for(Director d : list2)
+        {
+            if(d.getName().equals(Dname))
+            {
+                D = d;
+                break;
+            }
+        }
+        for(Movie m : hm.keySet())
+        {
+            if(hm.get(m) == D)
+            {
+                list1.remove(m);
+            }
+        }
+
+    }
+
+    public void DeleteAllMappedInDB()
+    {
+        for(Movie M : hm.keySet())
+        {
+            list1.remove(M);
+        }
+        for(Director D : hm.values())
+        {
+            list2.remove(D);
+        }
+        hm = new HashMap<>();
+    }
 }
