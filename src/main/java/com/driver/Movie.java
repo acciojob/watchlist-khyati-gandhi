@@ -45,7 +45,7 @@ public class Movie {
 		
 		 public Movie() { 
 		 //this.id = 1;
-		 this.id = this.id+1;
+		 //this.id = this.id+1;
 	}
 	
 
